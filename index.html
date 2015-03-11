@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ClientDependency Tester</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css" />
+  <script type="text/javascript">
+    var appInsights=window.appInsights||function(config){
+        function s(config){t[config]=function(){var i=arguments;t.queue.push(function(){t[config].apply(t,i)})}}var t={config:config},r=document,f=window,e="script",o=r.createElement(e),i,u;for(o.src=config.url||"//az416426.vo.msecnd.net/scripts/a/ai.0.js",r.getElementsByTagName(e)[0].parentNode.appendChild(o),t.cookie=r.cookie,t.queue=[],i=["Event","Exception","Metric","PageView","Trace"];i.length;)s("track"+i.pop());return config.disableExceptionTracking||(i="onerror",s("_"+i),u=f[i],f[i]=function(config,r,f,e,o){var s=u&&u(config,r,f,e,o);return s!==!0&&t["_"+i](config,r,f,e,o),s}),t
+    }({
+        instrumentationKey:"3d6e266a-ad80-41ab-b9ec-bc6a2433486a"
+    });
+
+    window.appInsights=appInsights;
+    appInsights.trackPageView();
+  </script>
+</head>
+<body>
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-12">
+        <br />
+        <div class="jumbotron">
+          <h1>ClientDependency Tester</h1>
+          <p>
+            This is a utility to test if your Umbraco website is affected by a recently discovered vulnerability in ClientDependency.
+            More information about the vulnerability is found at the <a href="http://umbraco.com/follow-us/blog-archive/2015/2/5/security-alert-update-clientdependency-immediately">Umbraco blog</a>.
+          </p>
+          <p>
+            <strong>Important:</strong> This test currently detects vulnerable Umbraco installations using ClientDependency versions prior to v1.7.1.1.
+             This is the most critical group and should be patched immediately. Later versions will be included when a stable signature is found.
+          </p>
+          <p>
+            Dionach has released a full explanation of the vulnerability at their <a href="https://www.dionach.com/blog/umbraco-cms-local-file-inclusion">blog.</a>
+            The source code of this application can be found at <a href="https://github.com/vidarw/clientdependency-test">GitHub</a>.
+          </p>
+          <br />
+          <div id="resultVulnerable" class="alert alert-danger">
+            <strong>Your installation is vulnerable!</strong><br/>
+            Please update to the latest version of ClientDependency by following the instructions from the <a href="http://umbraco.com/follow-us/blog-archive/2015/2/5/security-alert-update-clientdependency-immediately">Umbraco blog</a>.
+          </div>
+          <div id="resultOk" class="alert alert-success">
+            <strong>Your installation seems okay!</strong><br />
+            To be 100% sure, please update to the latest version as described in the <a href="http://umbraco.com/follow-us/blog-archive/2015/2/5/security-alert-update-clientdependency-immediately">Umbraco blog</a>.
+          </div>
+          <div id="resultUnknown" class="alert alert-warning">
+            <strong>An error occurred during the test.</strong> Could not complete the scan.<br />
+            To be 100% sure, please update to the latest version as described in the <a href="http://umbraco.com/follow-us/blog-archive/2015/2/5/security-alert-update-clientdependency-immediately">Umbraco blog</a>.
+          </div>
+          <br />
+          <form class="form" onSubmit="return false;">
+            <div class="form-group">
+              <input id="targetUrl" placeholder="example.com" class="form-control input-lg" type="text" />
+            </div>
+            <button class="btn btn-primary btn-lg" id="submitButton" value="Run test" type="submit">Run test</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        Built by Vidar Waagbø. <a href="https://twitter.com/waagbo">Twitter</a>, <a href="https://github.com/vidarw">GitHub</a>.
+      </div>
+    </div>
+
+  </div>
+
+
+  <script>
+    $("#resultVulnerable").hide();
+    $("#resultOk").hide();
+    $("#resultUnknown").hide();
+
+
+    $('#submitButton').on('click', function(){
+
+      $("#resultVulnerable").hide();
+      $("#resultOk").hide();
+      $("#resultUnknown").hide();
+
+      var domain = $('#targetUrl').val();
+      console.log('Checking domain', domain);
+
+      $.ajax({
+        url: '/',
+        type: 'POST',
+        data: {
+          domain: domain
+        }
+      }).success(function(data){
+        console.log(data);
+
+        if(data.vulnerable === 'true'){
+          $("#resultVulnerable").show();
+        } else if (data.vulnerable === 'false'){
+          $("#resultOk").show();
+        } else {
+          $("#resultUnknown").show();
+        }
+      }).error(function(err){
+        console.log('error', err);
+      });
+
+    });
+  </script>
+</body>
+</html>
